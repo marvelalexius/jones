@@ -32,6 +32,7 @@ func (h *HTTPService) Routes(route *gin.Engine) {
 			authed := v1.Group("").Use(middleware.JWTAuthMiddleware(h.Conf))
 			authed.GET("/users", h.FindAllUsers)
 			authed.POST("/reactions", h.React)
+			authed.GET("/reactions/likes", h.SeeLikes)
 			authed.POST("/subscription", h.Subscribe)
 			authed.GET("/subscription/manage", h.ManageSubscription)
 			// v1.POST("/reactions", h.CreateReaction)

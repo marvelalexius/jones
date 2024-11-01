@@ -24,7 +24,7 @@ type (
 		FindByStripeSubscriptionIDAndPlanID(ctx context.Context, id string, planID int) (*model.Subscription, error)
 		FindAllPlan(ctx context.Context) ([]model.SubscriptionPlan, error)
 		FindPlanByProductID(ctx context.Context, id string) (*model.SubscriptionPlan, error)
-		FindPlanByID(ctx context.Context, id string) (*model.SubscriptionPlan, error)
+		FindPlanByID(ctx context.Context, id int) (*model.SubscriptionPlan, error)
 		FindAll(ctx context.Context) ([]model.Subscription, error)
 		FindByUserID(ctx context.Context, userID string) (*model.Subscription, error)
 		BulkCreatePlan(subsPlan []model.SubscriptionPlan) error
@@ -73,7 +73,7 @@ func (r *SubscriptionRepository) FindPlanByProductID(ctx context.Context, id str
 	return &subscriptionPlan, nil
 }
 
-func (r *SubscriptionRepository) FindPlanByID(ctx context.Context, id string) (*model.SubscriptionPlan, error) {
+func (r *SubscriptionRepository) FindPlanByID(ctx context.Context, id int) (*model.SubscriptionPlan, error) {
 	var subscriptionPlan model.SubscriptionPlan
 
 	if err := r.db.Where("id = ?", id).First(&subscriptionPlan).Error; err != nil {
@@ -96,7 +96,7 @@ func (r *SubscriptionRepository) FindAll(ctx context.Context) ([]model.Subscript
 func (r *SubscriptionRepository) FindByUserID(ctx context.Context, userID string) (*model.Subscription, error) {
 	var subscription model.Subscription
 
-	if err := r.db.Where("user_id = ?", userID).Where("canceled_at is null").Or("expired_at <= ?", time.Now().Format("2006-01-02")).Find(&subscription).Error; err != nil {
+	if err := r.db.Where("user_id = ?", userID).Where("canceled_at is null").Or("expired_at <= ?", time.Now().Format("2006-01-02")).First(&subscription).Error; err != nil {
 		return nil, err
 	}
 

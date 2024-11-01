@@ -80,3 +80,31 @@ func (h *HTTPService) React(c *gin.Context) {
 		Data:    reaction,
 	})
 }
+
+func (h *HTTPService) SeeLikes(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Errorln(c, "failed to get user id from context")
+		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
+			Message: "something went wrong when seeing likes",
+		})
+
+		return
+	}
+
+	likes, err := h.ReactionService.SeeLikes(c, userID.(string))
+	if err != nil {
+		logger.Errorln(c, "failed to see likes", err)
+		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
+			Message: "something went wrong when seeing likes",
+			Errors:  err.Error(),
+		})
+
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusOK, utils.SuccessRes{
+		Message: "success",
+		Data:    map[string]interface{}{"likes": likes},
+	})
+}

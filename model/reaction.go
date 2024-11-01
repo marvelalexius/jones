@@ -20,6 +20,9 @@ type Reaction struct {
 	CreatedAt     time.Time  `gorm:"<-:create" json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
 	DeletedAt     *time.Time `json:"deleted_at"`
+
+	// User        User `json:"user"`
+	// MatchedUser User `json:"matched_user"`
 }
 
 type ReactionRequest struct {

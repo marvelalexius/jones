@@ -128,8 +128,6 @@ func (s *SubscriptionService) HandleInvoicePaid(ctx context.Context, invoice *st
 
 		return err
 	}
-	fmt.Println(subscription.PlanID, paidPlan.ID, subscription.StripeSubscriptionID, invoice.Subscription.ID)
-	fmt.Println(paidPlan.ID, paidPlan.StripeProductID, stripeProduct.Plan.ID, stripeProduct.Price.ID)
 
 	if subscription != nil {
 		if subscription.StripeSubscriptionID == invoice.Subscription.ID && subscription.PlanID == paidPlan.ID {

@@ -11,6 +11,7 @@ import (
 	"github.com/marvelalexius/jones/utils/logger"
 	"github.com/oklog/ulid/v2"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type (
@@ -23,6 +24,7 @@ type (
 
 	IReactionService interface {
 		Swipe(ctx context.Context, reaction model.ReactionRequest) (model.Reaction, error)
+		SeeLikes(ctx context.Context, userID string) ([]model.Reaction, error)
 	}
 )
 
@@ -112,6 +114,32 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 	go s.sendMatchNotification(matched)
 
 	return reaction, nil
+}
+
+func (s *ReactionService) SeeLikes(ctx context.Context, userID string) ([]model.Reaction, error) {
+	subscribed, err := s.SubscriptionRepo.FindByUserID(ctx, userID)
+	if err != nil {
+		logger.Errorln(ctx, "failed to check subscription", err)
+
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("you are not subscribed to any plan")
+		}
+
+		return nil, err
+	}
+
+	plan, err := s.SubscriptionRepo.FindPlanByID(ctx, subscribed.PlanID)
+	if err != nil {
+		logger.Errorln(ctx, "failed to find plan by user ID", err)
+
+		return nil, err
+	}
+
+	if plan.Name != model.SubscriptionPlanPro {
+		return nil, errors.New("you are not a pro user")
+	}
+
+	return s.ReactionRepo.FindLikes(ctx, userID)
 }
 
 func (u *ReactionService) sendMatchNotification(reaction model.Reaction) {

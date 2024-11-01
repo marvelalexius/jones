@@ -16,6 +16,7 @@ type (
 	}
 
 	IReactionRepository interface {
+		FindLikes(ctx context.Context, userID string) (reactions []model.Reaction, err error)
 		FindMatch(ctx context.Context, userID, matchedUserID string) (model.Reaction, error)
 		HasSwiped(ctx context.Context, userID, matchedUserID string) (reactions model.Reaction, err error)
 		FindSwiped(ctx context.Context, userID string) (reactions []model.Reaction, err error)
@@ -42,6 +43,17 @@ func (r *ReactionRepository) FindSwiped(ctx context.Context, userID string) (rea
 
 func (r *ReactionRepository) FindMatch(ctx context.Context, userID, matchedUserID string) (reactions model.Reaction, err error) {
 	err = r.db.Table("reactions").Where("user_id = ?", userID).Where("matched_user_id = ?", matchedUserID).Where("type = ?", model.ReactionLike).First(&reactions).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logger.Errorln(ctx, "failed to find match", err)
+
+		return reactions, err
+	}
+
+	return reactions, nil
+}
+
+func (r *ReactionRepository) FindLikes(ctx context.Context, userID string) (reactions []model.Reaction, err error) {
+	err = r.db.Table("reactions").Where("matched_user_id = ?", userID).Where("matched_at is null").Where("type = ?", model.ReactionLike).Find(&reactions).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		logger.Errorln(ctx, "failed to find match", err)
 

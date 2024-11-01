@@ -28,7 +28,7 @@ var SubscriptionFeatures = map[string][]string{
 }
 
 type SubscriptionRequest struct {
-	PlanID string `json:"plan_id"`
+	PlanID int `json:"plan_id" binding:"required,numeric"`
 }
 
 type SubscriptionPlan struct {
