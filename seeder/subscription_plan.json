@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "BASIC",
+    "price": 30000,
+    "features": ["unlimited_likes"]
+  },
+  {
+    "id": 2,
+    "name": "PRO",
+    "price": 80000,
+    "features": ["unlimited_likes", "see_likes"]
+  }
+]

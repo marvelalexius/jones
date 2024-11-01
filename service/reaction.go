@@ -8,6 +8,7 @@ import (
 	"github.com/marvelalexius/jones/model"
 	"github.com/marvelalexius/jones/repository"
 	"github.com/marvelalexius/jones/utils/logger"
+	"github.com/oklog/ulid/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -72,7 +73,9 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 
 	now := time.Now()
 	reaction.MatchedAt = &now
+
 	matched.MatchedAt = &now
+	matched.UpdatedAt = &now
 
 	err = s.ReactionRepo.Update(ctx, &matched)
 	if err != nil {
@@ -110,6 +113,7 @@ func (u *ReactionService) sendMatchNotification(reaction model.Reaction) {
 	}
 
 	notification := model.Notification{
+		ID:        ulid.Make().String(),
 		UserID:    reaction.UserID,
 		Content:   string(b),
 		IsRead:    false,

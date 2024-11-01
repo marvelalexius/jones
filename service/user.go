@@ -131,7 +131,7 @@ func (s *UserService) FindAll(ctx context.Context, userID string) (users []model
 		userIDs = append(userIDs, swipedUser.MatchedUserID)
 	}
 
-	users, total, err = s.UserRepo.FindAll(ctx, userIDs)
+	users, total, err = s.UserRepo.FindAll(ctx, userIDs, loggedInUser.Preference)
 	if err != nil {
 		logger.Errorln(ctx, "failed to find users", err)
 

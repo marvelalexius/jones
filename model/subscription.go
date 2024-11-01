@@ -3,37 +3,47 @@ package model
 import (
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/shopspring/decimal"
 )
 
 const (
-	SubscriptionPlanFree  = "free"
-	SubscriptionPlanBasic = "basic"
-	SubscriptionPlanPro   = "pro"
+	SubscriptionPlanBasic = "BASIC"
+	SubscriptionPlanPro   = "PRO"
 
 	SubscriptionStatusActive   = "active"
 	SubscriptionStatusExpired  = "expired"
 	SubscriptionStatusCanceled = "canceled"
 )
 
+var SubscriptionFeatures = map[string][]string{
+	"BASIC": {
+		"unlimited_likes",
+	},
+	"PRO": {
+		"unlimited_likes",
+		"see_likes",
+	},
+}
+
 type SubscriptionRequest struct {
 	PlanID string `json:"plan_id"`
 }
 
 type SubscriptionPlan struct {
-	ID            string          `json:"id"`
-	Name          string          `json:"name"`
-	Price         decimal.Decimal `json:"price"`
-	Features      []string        `json:"features"`
-	StripePriceID string          `json:"-"`
-	CreatedAt     time.Time       `gorm:"<-:create" json:"created_at"`
-	UpdatedAt     *time.Time      `json:"updated_at"`
+	ID              int             `json:"id"`
+	Name            string          `json:"name"`
+	Price           decimal.Decimal `json:"price"`
+	Features        pq.StringArray  `gorm:"type:text[]" json:"features"`
+	StripeProductID string          `json:"-"`
+	CreatedAt       time.Time       `gorm:"<-:create" json:"created_at"`
+	UpdatedAt       *time.Time      `json:"updated_at"`
 }
 
 type Subscription struct {
 	ID                   string           `json:"id"`
 	UserID               string           `json:"user_id"`
-	PlanID               string           `json:"plan_id"`
+	PlanID               int              `json:"plan_id"`
 	StripeSubscriptionID string           `json:"-"`
 	StartedAt            time.Time        `gorm:"<-:create" json:"started_at"`
 	ExpiredAt            time.Time        `gorm:"<-:create" json:"expired_at"`

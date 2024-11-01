@@ -1,4 +1,4 @@
-package jones
+package main
 
 import (
 	"os"

@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/marvelalexius/jones/model"
+	"github.com/marvelalexius/jones/utils/str"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type (
@@ -22,6 +25,7 @@ type (
 		FindPlanByProductID(ctx context.Context, id string) (*model.SubscriptionPlan, error)
 		FindAll(ctx context.Context) ([]model.Subscription, error)
 		FindByUserID(ctx context.Context, userID string) (*model.Subscription, error)
+		BulkCreatePlan(subsPlan []model.SubscriptionPlan) error
 	}
 )
 
@@ -95,4 +99,18 @@ func (r *SubscriptionRepository) FindByStripeSubscriptionID(ctx context.Context,
 	}
 
 	return &subscription, nil
+}
+
+func (r *SubscriptionRepository) BulkCreatePlan(subsPlan []model.SubscriptionPlan) error {
+	err := r.db.Table("subscription_plans").Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&subsPlan).Error
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"subscriptionPlan": str.DumpJSON(subsPlan),
+		}).Error(err)
+		return err
+	}
+
+	return err
 }

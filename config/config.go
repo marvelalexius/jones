@@ -63,7 +63,7 @@ func PostgresDSN() string {
 	c.DB.Password = os.Getenv("DB_PASSWORD")
 	c.DB.Schema = os.Getenv("DB_SCHEMA")
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", c.DB.Host, c.DB.Port, c.DB.User, c.DB.Password, c.DB.Database)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", c.DB.User, c.DB.Password, c.DB.Host, c.DB.Port, c.DB.Database)
 
 	return dsn
 }

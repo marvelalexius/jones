@@ -3,9 +3,25 @@ package model
 import (
 	"time"
 
-	"github.com/oklog/ulid/v2"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var SupportedGender = map[string]string{
+	"MALE":   "MALE",
+	"FEMALE": "FEMALE",
+}
+
+var SupportedPreference = map[string]string{
+	"MALE":   "MALE",
+	"FEMALE": "FEMALE",
+	"BOTH":   "BOTH",
+}
+
+var GenderMale = SupportedGender["MALE"]
+var GenderFemale = SupportedGender["FEMALE"]
+var PreferenceMale = SupportedPreference["MALE"]
+var PreferenceFemale = SupportedPreference["FEMALE"]
+var PreferenceBoth = SupportedPreference["BOTH"]
 
 type RefreshToken struct {
 	RefreshToken string `json:"refresh_token"`
@@ -22,8 +38,8 @@ type RegisterUser struct {
 	Email       string    `json:"email" binding:"required,email,max=100"`
 	Password    string    `json:"password,omitempty" binding:"required,max=100"`
 	Bio         string    `json:"bio" binding:"max=500"`
-	Gender      string    `json:"gender" binding:"oneof=MALE FEMALE OTHERS"`
-	Preference  string    `json:"preference" binding:"oneof=MALE FEMALE OTHERS"`
+	Gender      string    `json:"gender" binding:"oneof=MALE FEMALE"`
+	Preference  string    `json:"preference" binding:"oneof=MALE FEMALE BOTH"`
 	DateOfBirth time.Time `json:"age" binding:"required" time_format:"2006-01-02"`
 	Images      []string  `json:"images" binding:"required,min=1,max=5"`
 }
@@ -52,9 +68,10 @@ type User struct {
 }
 
 type Image struct {
-	ID        string     `json:"id"`
+	ID        int        `json:"id"`
 	UserID    string     `json:"user_id"`
 	URL       string     `json:"url"`
+	IsPrimary bool       `json:"is_primary"`
 	CreatedAt time.Time  `gorm:"<-:create" json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }
@@ -76,12 +93,12 @@ func (u *User) HashPassword(password string) error {
 
 func (u *User) NewImageFromRequest(images []string) {
 	u.Images = []Image{}
-	for _, image := range images {
+	for i, image := range images {
 		u.Images = append(u.Images, Image{
-			ID:        ulid.Make().String(),
 			URL:       image,
 			UserID:    u.ID,
 			CreatedAt: time.Now(),
+			IsPrimary: i == 0,
 		})
 	}
 }

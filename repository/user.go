@@ -14,7 +14,7 @@ type (
 	}
 
 	IUserRepository interface {
-		FindAll(ctx context.Context, userIds []string) (users []model.User, total int64, err error)
+		FindAll(ctx context.Context, userIds []string, preference string) (users []model.User, total int64, err error)
 		FindByID(ctx context.Context, id string) (*model.User, error)
 		FindByEmail(ctx context.Context, email string) (*model.User, error)
 		FindByStripeCustomerID(ctx context.Context, id string) (*model.User, error)
@@ -27,8 +27,16 @@ func NewUserRepository(db *gorm.DB) IUserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) FindAll(ctx context.Context, userIds []string) (users []model.User, total int64, err error) {
+func (r *UserRepository) FindAll(ctx context.Context, userIds []string, preference string) (users []model.User, total int64, err error) {
 	q := r.db.Table("users").Not("id in (?)", userIds)
+
+	if val, ok := model.SupportedPreference[preference]; ok {
+		if val == "BOTH" {
+			q = q.Where("(gender = ? OR gender = ?)", model.GenderMale, model.GenderFemale)
+		} else {
+			q = q.Where("gender = ?", val)
+		}
+	}
 
 	err = q.Count(&total).Error
 	if err != nil {
