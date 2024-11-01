@@ -3,7 +3,7 @@
     id VARCHAR(26) NOT NULL,
     user_id VARCHAR(26) not null,
     subscription_plan_id int not null,
-    stripe_subscription_id VARCHAR(255) not null,
+    stripe_subscription_id VARCHAR(255),
 
     started_at TIMESTAMP NOT NULL,
     expired_at TIMESTAMP NOT NULL,

@@ -32,13 +32,13 @@ type SubscriptionRequest struct {
 }
 
 type SubscriptionPlan struct {
-	ID              int             `json:"id"`
-	Name            string          `json:"name"`
-	Price           decimal.Decimal `json:"price"`
-	Features        pq.StringArray  `gorm:"type:text[]" json:"features"`
-	StripeProductID string          `json:"-"`
-	CreatedAt       time.Time       `gorm:"<-:create" json:"created_at"`
-	UpdatedAt       *time.Time      `json:"updated_at"`
+	ID            int             `json:"id"`
+	Name          string          `json:"name"`
+	Price         decimal.Decimal `json:"price"`
+	Features      pq.StringArray  `gorm:"type:text[]" json:"features"`
+	StripePriceID string          `json:"-"`
+	CreatedAt     time.Time       `gorm:"<-:create" json:"created_at"`
+	UpdatedAt     *time.Time      `json:"updated_at"`
 }
 
 type Subscription struct {

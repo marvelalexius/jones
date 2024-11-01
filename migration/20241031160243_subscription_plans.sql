@@ -4,7 +4,7 @@
     name VARCHAR(128),
     price decimal(10,0),
     features text[],
-    stripe_product_id VARCHAR(255) not null,
+    stripe_price_id VARCHAR(255),
 
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),

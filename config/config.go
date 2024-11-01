@@ -15,6 +15,10 @@ type App struct {
 	RefreshTokenSecret string
 }
 
+type FeatureFlag struct {
+	EnableStripe bool
+}
+
 type DB struct {
 	Host     string
 	Port     int
@@ -30,9 +34,10 @@ type Stripe struct {
 }
 
 type Config struct {
-	App    App
-	DB     DB
-	Stripe Stripe
+	App         App
+	DB          DB
+	Stripe      Stripe
+	FeatureFlag FeatureFlag
 }
 
 func InitConfig() *Config {
@@ -49,6 +54,8 @@ func InitConfig() *Config {
 
 	c.Stripe.Secret = os.Getenv("STRIPE_SECRET_KEY")
 	c.Stripe.WebhookSecret = os.Getenv("STRIPE_WEBHOOK_SECRET")
+
+	c.FeatureFlag.EnableStripe = os.Getenv("FEATURE_FLAG_ENABLE_STRIPE") == "true"
 
 	return &c
 }

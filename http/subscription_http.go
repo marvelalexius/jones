@@ -118,7 +118,10 @@ func (h *HTTPService) HandleCallback(c *gin.Context) {
 			return
 		}
 
-		h.SubscriptionService.HandleSubscriptionUpdated(c, &subscription)
+		err = h.SubscriptionService.HandleSubscriptionUpdated(c, &subscription)
+		if err != nil {
+			logger.Errorln(c.Request.Context(), err)
+		}
 	case "customer.subscription.deleted":
 		var subscription stripe.Subscription
 
@@ -132,7 +135,10 @@ func (h *HTTPService) HandleCallback(c *gin.Context) {
 			return
 		}
 
-		h.SubscriptionService.HandleSubscriptionDeleted(c, &subscription)
+		err = h.SubscriptionService.HandleSubscriptionDeleted(c, &subscription)
+		if err != nil {
+			logger.Errorln(c.Request.Context(), err)
+		}
 	case "invoice.paid":
 		var invoice stripe.Invoice
 
@@ -146,7 +152,10 @@ func (h *HTTPService) HandleCallback(c *gin.Context) {
 			return
 		}
 
-		h.SubscriptionService.HandleInvoicePaid(c, &invoice)
+		err = h.SubscriptionService.HandleInvoicePaid(c, &invoice)
+		if err != nil {
+			logger.Errorln(c.Request.Context(), err)
+		}
 	case "invoice.payment_failed":
 		var invoice stripe.Invoice
 
@@ -160,7 +169,10 @@ func (h *HTTPService) HandleCallback(c *gin.Context) {
 			return
 		}
 
-		h.SubscriptionService.HandleInvoicePaymentFailed(c, invoice.CustomerEmail)
+		err = h.SubscriptionService.HandleInvoicePaymentFailed(c, invoice.CustomerEmail)
+		if err != nil {
+			logger.Errorln(c.Request.Context(), err)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{

@@ -55,8 +55,8 @@ func TestSubscribe(t *testing.T) {
 				}, nil)
 
 				mockSubscriptionRepo.On("FindPlanByID", ctx, 1).Return(&model.SubscriptionPlan{
-					ID:              1,
-					StripeProductID: "prod_123",
+					ID:            1,
+					StripePriceID: "prod_123",
 				}, nil)
 
 				mockStripeClient.On("CreateCheckoutSession", ctx, "cus_123", "prod_123").Return(&stripe.CheckoutSession{
@@ -85,8 +85,8 @@ func TestSubscribe(t *testing.T) {
 				}, nil)
 
 				mockSubscriptionRepo.On("FindPlanByID", ctx, 1).Return(&model.SubscriptionPlan{
-					ID:              1,
-					StripeProductID: "prod_456",
+					ID:            1,
+					StripePriceID: "prod_456",
 				}, nil)
 
 				mockStripeClient.On("CreateCheckoutSession", ctx, "cus_456", "prod_456").Return(&stripe.CheckoutSession{

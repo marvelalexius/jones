@@ -27,15 +27,16 @@ func (h *HTTPService) Routes(route *gin.Engine) {
 			v1.POST("/auth/login", h.Login)
 			v1.POST("/auth/refresh", h.RefreshAuthToken)
 
-			v1.POST("/payment/callback", h.HandleCallback)
-
 			authed := v1.Group("").Use(middleware.JWTAuthMiddleware(h.Conf))
 			authed.GET("/users", h.FindAllUsers)
 			authed.POST("/reactions", h.React)
 			authed.GET("/reactions/likes", h.SeeLikes)
 			authed.POST("/subscription", h.Subscribe)
-			authed.GET("/subscription/manage", h.ManageSubscription)
-			// v1.POST("/reactions", h.CreateReaction)
+
+			if h.Conf.FeatureFlag.EnableStripe {
+				v1.POST("/payment/callback", h.HandleCallback)
+				authed.GET("/subscription/portal", h.ManageSubscription)
+			}
 		}
 	}
 }
