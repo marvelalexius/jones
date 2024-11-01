@@ -37,15 +37,15 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 	if err != nil {
 		logger.Errorln(ctx, "failed to check subscription", err)
 
-		return model.Reaction{}, err
+		return model.Reaction{}, errors.New("failed to check subscription")
 	}
 
 	if subscribed.ID == "" {
 		count, err := s.ReactionRepo.FindSwipeCount(ctx, req.UserID)
 		if err != nil {
-			logger.Errorln(ctx, "failed to find swipe count", err)
+			logger.Errorln(ctx, "failed to check swipe count", err)
 
-			return model.Reaction{}, err
+			return model.Reaction{}, errors.New("failed to check swipe count")
 		}
 
 		if count >= 10 {
@@ -59,7 +59,7 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 	if err != nil {
 		logger.Errorln(ctx, "failed to check if user has swiped", err)
 
-		return model.Reaction{}, err
+		return model.Reaction{}, errors.New("failed to check if user has swiped")
 	}
 
 	if hasSwiped.ID != "" {
@@ -73,7 +73,7 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 	if err != nil {
 		logger.Errorln(ctx, "failed to find match", err)
 
-		return model.Reaction{}, err
+		return model.Reaction{}, errors.New("failed to find match")
 	}
 
 	if matched.ID == "" {
@@ -81,7 +81,7 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 		if err != nil {
 			logger.Errorln(ctx, "failed to create reaction", err)
 
-			return model.Reaction{}, err
+			return model.Reaction{}, errors.New("failed to create reaction")
 		}
 
 		return reaction, nil
@@ -97,21 +97,21 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 	if err != nil {
 		logger.Errorln(ctx, "failed to update reaction", err)
 
-		return model.Reaction{}, err
+		return model.Reaction{}, errors.New("failed to update reaction")
 	}
 
 	err = s.ReactionRepo.Create(ctx, reaction)
 	if err != nil {
 		logger.Errorln(ctx, "failed to create reaction", err)
 
-		return model.Reaction{}, err
+		return model.Reaction{}, errors.New("failed to create reaction")
 	}
 
 	// send notification to swipe
-	go s.sendMatchNotification(reaction)
+	s.sendMatchNotification(reaction)
 
 	// send notification to matched
-	go s.sendMatchNotification(matched)
+	s.sendMatchNotification(matched)
 
 	return reaction, nil
 }
@@ -125,21 +125,28 @@ func (s *ReactionService) SeeLikes(ctx context.Context, userID string) ([]model.
 			return nil, errors.New("you are not subscribed to any plan")
 		}
 
-		return nil, err
+		return nil, errors.New("failed to check subscription")
 	}
 
 	plan, err := s.SubscriptionRepo.FindPlanByID(ctx, subscribed.PlanID)
 	if err != nil {
-		logger.Errorln(ctx, "failed to find plan by user ID", err)
+		logger.Errorln(ctx, "failed to find plan by ID", err)
 
-		return nil, err
+		return nil, errors.New("failed to find plan")
 	}
 
 	if plan.Name != model.SubscriptionPlanPro {
 		return nil, errors.New("you are not a pro user")
 	}
 
-	return s.ReactionRepo.FindLikes(ctx, userID)
+	reactions, err := s.ReactionRepo.FindLikes(ctx, userID)
+	if err != nil {
+		logger.Errorln(ctx, "failed to find likes", err)
+
+		return nil, errors.New("failed to find likes")
+	}
+
+	return reactions, nil
 }
 
 func (u *ReactionService) sendMatchNotification(reaction model.Reaction) {

@@ -44,6 +44,7 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID string, req 
 	if err != nil {
 		logger.Errorln(ctx, "error finding user by ID", err)
 
+		return "", err
 	}
 
 	if user.StripeCustomerID == "" {
@@ -156,7 +157,6 @@ func (s *SubscriptionService) HandleInvoicePaid(ctx context.Context, invoice *st
 
 	periodStart := time.Unix(int64(stripeProduct.Period.Start), 0)
 	periodEnd := time.Unix(int64(stripeProduct.Period.End), 0)
-	fmt.Println(periodEnd)
 	newSubscription := model.Subscription{
 		ID:                   ulid.Make().String(),
 		UserID:               user.ID,
@@ -224,7 +224,6 @@ func (s *SubscriptionService) HandleSubscriptionUpdated(ctx context.Context, str
 		return err
 	}
 
-	fmt.Println(stripeSubscription.CanceledAt, subscription.ID)
 	if stripeSubscription.CanceledAt != 0 {
 		canceledAt := time.Unix(int64(stripeSubscription.CanceledAt), 0)
 		subscription.CanceledAt = sql.NullTime{Time: canceledAt, Valid: true}

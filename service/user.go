@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -87,6 +88,8 @@ func (s *UserService) Register(ctx context.Context, req *model.RegisterUser) (*m
 
 		return &model.User{}, err
 	}
+
+	fmt.Println(user)
 
 	return user, nil
 }
