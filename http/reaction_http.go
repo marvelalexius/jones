@@ -41,6 +41,16 @@ func (h *HTTPService) FindAllUsers(c *gin.Context) {
 }
 
 func (h *HTTPService) React(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Errorln(c, "failed to get user id from context")
+		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
+			Message: "something went wrong when swiping",
+		})
+
+		return
+	}
+
 	var req model.ReactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.Errorln(c, "failed to bind json", err)
@@ -53,12 +63,13 @@ func (h *HTTPService) React(c *gin.Context) {
 		return
 	}
 
+	req.UserID = userID.(string)
 	reaction, err := h.ReactionService.Swipe(c, req)
 	if err != nil {
 		logger.Errorln(c, "failed to swipe", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
 			Message: "something went wrong when swiping",
-			Errors:  err,
+			Errors:  err.Error(),
 		})
 
 		return

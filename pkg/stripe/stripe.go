@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/marvelalexius/jones/utils/logger"
-	"github.com/stripe/stripe-go/v81"
-	billingPortalSession "github.com/stripe/stripe-go/v81/billingportal/session"
-	checkoutSession "github.com/stripe/stripe-go/v81/checkout/session"
-	"github.com/stripe/stripe-go/v81/customer"
+	"github.com/stripe/stripe-go/v76"
+	"github.com/stripe/stripe-go/v76/client"
 )
 
 type (
 	StripeClient struct {
+		Client        *client.API
 		Secret        string
 		WebhookSecret string
 	}
@@ -25,9 +24,11 @@ type (
 )
 
 func NewStripeClient(secret string, webhookSecret string) IStripeClient {
+	sc := &client.API{}
+	sc.Init(secret, nil)
+
 	return &StripeClient{
-		Secret:        secret,
-		WebhookSecret: webhookSecret,
+		Client: sc,
 	}
 }
 
@@ -37,7 +38,7 @@ func (c *StripeClient) CreateCustomer(ctx context.Context, email string, name st
 		Email: stripe.String(email),
 	}
 
-	result, err := customer.New(params)
+	result, err := c.Client.Customers.New(params)
 	if err != nil {
 		logger.Errorln(ctx, "failed to create customer", err)
 
@@ -61,7 +62,7 @@ func (c *StripeClient) CreateCheckoutSession(ctx context.Context, customerID str
 		},
 	}
 
-	session, err := checkoutSession.New(params)
+	session, err := c.Client.CheckoutSessions.New(params)
 	if err != nil {
 		logger.Errorln(ctx, "failed to create checkout session", err)
 
@@ -76,7 +77,7 @@ func (c *StripeClient) CreateBillingPortalSession(ctx context.Context, customerI
 		Customer: stripe.String(customerID),
 	}
 
-	session, err := billingPortalSession.New(params)
+	session, err := c.Client.BillingPortalSessions.New(params)
 	if err != nil {
 		logger.Errorln(ctx, "failed to create billing portal session", err)
 

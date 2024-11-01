@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
@@ -41,14 +42,13 @@ type SubscriptionPlan struct {
 }
 
 type Subscription struct {
-	ID                   string           `json:"id"`
-	UserID               string           `json:"user_id"`
-	PlanID               int              `json:"plan_id"`
-	StripeSubscriptionID string           `json:"-"`
-	StartedAt            time.Time        `gorm:"<-:create" json:"started_at"`
-	ExpiredAt            time.Time        `gorm:"<-:create" json:"expired_at"`
-	CanceledAt           *time.Time       `json:"canceled_at"`
-	CreatedAt            time.Time        `gorm:"<-:create" json:"created_at"`
-	UpdatedAt            *time.Time       `json:"updated_at"`
-	SubscriptionPlan     SubscriptionPlan `gorm:"->" json:"subscription_plan"`
+	ID                   string       `json:"id"`
+	UserID               string       `json:"user_id"`
+	PlanID               int          `json:"plan_id"`
+	StripeSubscriptionID string       `json:"-"`
+	StartedAt            time.Time    `json:"started_at"`
+	ExpiredAt            time.Time    `json:"expired_at"`
+	CanceledAt           sql.NullTime `json:"canceled_at"`
+	CreatedAt            time.Time    `gorm:"<-:create" json:"created_at"`
+	UpdatedAt            *time.Time   `json:"updated_at"`
 }

@@ -23,9 +23,9 @@ type Reaction struct {
 }
 
 type ReactionRequest struct {
-	UserID        string `json:"user_id"`
-	MatchedUserID string `json:"matched_user_id"`
-	Type          string `json:"type"`
+	UserID        string `json:"-"`
+	MatchedUserID string `json:"matched_user_id" binding:"required,ulid"`
+	Type          string `json:"type" binding:"oneof=LIKE PASS"`
 }
 
 func (r *ReactionRequest) ToReactionModel() Reaction {

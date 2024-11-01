@@ -1,8 +1,11 @@
 package model
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,30 +36,27 @@ type LoginUser struct {
 }
 
 type RegisterUser struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name" binding:"required,max=100"`
-	Email       string    `json:"email" binding:"required,email,max=100"`
-	Password    string    `json:"password,omitempty" binding:"required,max=100"`
-	Bio         string    `json:"bio" binding:"max=500"`
-	Gender      string    `json:"gender" binding:"oneof=MALE FEMALE"`
-	Preference  string    `json:"preference" binding:"oneof=MALE FEMALE BOTH"`
-	DateOfBirth time.Time `json:"age" binding:"required" time_format:"2006-01-02"`
-	Images      []string  `json:"images" binding:"required,min=1,max=5"`
+	Name        string   `json:"name" binding:"required,max=100"`
+	Email       string   `json:"email" binding:"required,email,max=100"`
+	Password    string   `json:"password,omitempty" binding:"required,max=100"`
+	Bio         string   `json:"bio" binding:"max=500"`
+	Gender      string   `json:"gender" binding:"oneof=MALE FEMALE"`
+	Preference  string   `json:"preference" binding:"oneof=MALE FEMALE BOTH"`
+	DateOfBirth string   `json:"date_of_birth" binding:"required" time_format:"2006-01-02"`
+	Images      []string `json:"images" binding:"required,min=1,max=5"`
 }
 
 type AuthUser struct {
 	User
-	AuthToken           string    `json:"token"`
-	AuthTokenExpires    time.Time `json:"token_expires"`
-	RefreshToken        string    `json:"refresh_token"`
-	RefreshTokenExpires time.Time `json:"refresh_token_expires"`
+	AuthToken    string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type User struct {
 	ID               string     `json:"id"`
 	Name             string     `json:"name"`
 	Email            string     `json:"email"`
-	Password         string     `gorm:"->:false;<-:create" json:"password,omitempty"`
+	Password         string     `gorm:"<-:create" json:"-"`
 	Bio              string     `json:"bio"`
 	Gender           string     `json:"gender"`
 	Preference       string     `json:"preference"`
@@ -77,6 +77,7 @@ type Image struct {
 }
 
 func (u *User) CheckPassword(password string) error {
+	fmt.Println(u.Password, password)
 	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }
 
@@ -104,12 +105,17 @@ func (u *User) NewImageFromRequest(images []string) {
 }
 
 func (ru *RegisterUser) ToUserModel() *User {
-	age := calculateAge(ru.DateOfBirth)
+	dob, err := time.Parse("2006-01-02", ru.DateOfBirth)
+	if err != nil {
+		return &User{}
+	}
+
+	age := calculateAge(dob)
 
 	return &User{
-		ID:         ru.ID,
+		ID:         ulid.Make().String(),
 		Name:       ru.Name,
-		Email:      ru.Email,
+		Email:      strings.ToLower(ru.Email),
 		Password:   ru.Password,
 		Bio:        ru.Bio,
 		Gender:     ru.Gender,

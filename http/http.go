@@ -23,7 +23,7 @@ func (h *HTTPService) Routes(route *gin.Engine) {
 	{
 		v1 := api.Group("/v1")
 		{
-			v1.POST("/register", h.Register)
+			v1.POST("/auth/register", h.Register)
 			v1.POST("/auth/login", h.Login)
 			v1.POST("/auth/refresh", h.RefreshAuthToken)
 

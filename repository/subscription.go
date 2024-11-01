@@ -21,8 +21,10 @@ type (
 		Update(ctx context.Context, subscription *model.Subscription) error
 		FindByID(ctx context.Context, id string) (*model.Subscription, error)
 		FindByStripeSubscriptionID(ctx context.Context, id string) (*model.Subscription, error)
+		FindByStripeSubscriptionIDAndPlanID(ctx context.Context, id string, planID int) (*model.Subscription, error)
 		FindAllPlan(ctx context.Context) ([]model.SubscriptionPlan, error)
 		FindPlanByProductID(ctx context.Context, id string) (*model.SubscriptionPlan, error)
+		FindPlanByID(ctx context.Context, id string) (*model.SubscriptionPlan, error)
 		FindAll(ctx context.Context) ([]model.Subscription, error)
 		FindByUserID(ctx context.Context, userID string) (*model.Subscription, error)
 		BulkCreatePlan(subsPlan []model.SubscriptionPlan) error
@@ -71,6 +73,16 @@ func (r *SubscriptionRepository) FindPlanByProductID(ctx context.Context, id str
 	return &subscriptionPlan, nil
 }
 
+func (r *SubscriptionRepository) FindPlanByID(ctx context.Context, id string) (*model.SubscriptionPlan, error) {
+	var subscriptionPlan model.SubscriptionPlan
+
+	if err := r.db.Where("id = ?", id).First(&subscriptionPlan).Error; err != nil {
+		return nil, err
+	}
+
+	return &subscriptionPlan, nil
+}
+
 func (r *SubscriptionRepository) FindAll(ctx context.Context) ([]model.Subscription, error) {
 	var subscriptions []model.Subscription
 
@@ -95,6 +107,16 @@ func (r *SubscriptionRepository) FindByStripeSubscriptionID(ctx context.Context,
 	var subscription model.Subscription
 
 	if err := r.db.Where("stripe_subscription_id = ?", id).First(&subscription).Error; err != nil {
+		return nil, err
+	}
+
+	return &subscription, nil
+}
+
+func (r *SubscriptionRepository) FindByStripeSubscriptionIDAndPlanID(ctx context.Context, id string, planID int) (*model.Subscription, error) {
+	var subscription model.Subscription
+
+	if err := r.db.Where("stripe_subscription_id = ?", id).Where("plan_id = ?", planID).First(&subscription).Error; err != nil {
 		return nil, err
 	}
 

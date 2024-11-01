@@ -47,7 +47,7 @@ func InitConfig() *Config {
 	c.DB.Password = os.Getenv("DB_PASSWORD")
 	c.DB.Schema = os.Getenv("DB_SCHEMA")
 
-	c.Stripe.Secret = os.Getenv("STRIPE_SECRET")
+	c.Stripe.Secret = os.Getenv("STRIPE_SECRET_KEY")
 	c.Stripe.WebhookSecret = os.Getenv("STRIPE_WEBHOOK_SECRET")
 
 	return &c

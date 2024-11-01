@@ -28,7 +28,7 @@ func (h *HTTPService) Register(c *gin.Context) {
 		logger.Errorln(c, "failed to register", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
 			Message: "something went wrong when registering",
-			Errors:  err,
+			Errors:  err.Error(),
 		})
 
 		return
@@ -39,7 +39,7 @@ func (h *HTTPService) Register(c *gin.Context) {
 		logger.Errorln(c, "failed to generate auth tokens", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
 			Message: "something went wrong when generating auth tokens",
-			Errors:  err,
+			Errors:  err.Error(),
 		})
 
 		return
@@ -88,7 +88,7 @@ func (h *HTTPService) Login(c *gin.Context) {
 		logger.Errorln(c, "failed to login", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
 			Message: "something went wrong when logging in",
-			Errors:  err,
+			Errors:  err.Error(),
 		})
 
 		return
@@ -99,7 +99,7 @@ func (h *HTTPService) Login(c *gin.Context) {
 		logger.Errorln(c, "failed to generate auth tokens", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
 			Message: "something went wrong when generating auth tokens",
-			Errors:  err,
+			Errors:  err.Error(),
 		})
 
 		return

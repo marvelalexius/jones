@@ -9,8 +9,8 @@ import (
 	"github.com/marvelalexius/jones/model"
 	"github.com/marvelalexius/jones/utils"
 	"github.com/marvelalexius/jones/utils/logger"
-	"github.com/stripe/stripe-go/v81"
-	"github.com/stripe/stripe-go/v81/webhook"
+	"github.com/stripe/stripe-go/v76"
+	"github.com/stripe/stripe-go/v76/webhook"
 )
 
 func (h *HTTPService) Subscribe(c *gin.Context) {
@@ -36,7 +36,7 @@ func (h *HTTPService) Subscribe(c *gin.Context) {
 		return
 	}
 
-	subscription, err := h.SubscriptionService.Subscribe(c, userID.(string), req)
+	checkoutUrl, err := h.SubscriptionService.Subscribe(c, userID.(string), req)
 	if err != nil {
 		logger.Errorln(c, "failed to subscribe", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
@@ -49,7 +49,7 @@ func (h *HTTPService) Subscribe(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusOK, utils.SuccessRes{
 		Message: "success",
-		Data:    subscription,
+		Data:    map[string]interface{}{"checkout_url": checkoutUrl},
 	})
 }
 
@@ -64,12 +64,12 @@ func (h *HTTPService) ManageSubscription(c *gin.Context) {
 		return
 	}
 
-	portal, err := h.SubscriptionService.CustomerPortal(c, userID.(string))
+	portalUrl, err := h.SubscriptionService.CustomerPortal(c, userID.(string))
 	if err != nil {
 		logger.Errorln(c, "failed to manage subscription", err)
 		utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
 			Message: "something went wrong when managing subscription",
-			Errors:  err,
+			Errors:  err.Error(),
 		})
 
 		return
@@ -77,7 +77,7 @@ func (h *HTTPService) ManageSubscription(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusOK, utils.SuccessRes{
 		Message: "success",
-		Data:    portal,
+		Data:    map[string]interface{}{"portal_url": portalUrl},
 	})
 }
 
@@ -105,6 +105,20 @@ func (h *HTTPService) HandleCallback(c *gin.Context) {
 	}
 
 	switch event.Type {
+	case "customer.subscription.updated":
+		var subscription stripe.Subscription
+
+		if err := json.Unmarshal(event.Data.Raw, &subscription); err != nil {
+			logger.Errorln(c, "failed to unmarshal subscription", err)
+			utils.ErrorResponse(c, http.StatusInternalServerError, utils.ErrorRes{
+				Message: "something went wrong when unmarshaling subscription",
+				Errors:  err,
+			})
+
+			return
+		}
+
+		h.SubscriptionService.HandleSubscriptionUpdated(c, &subscription)
 	case "customer.subscription.deleted":
 		var subscription stripe.Subscription
 

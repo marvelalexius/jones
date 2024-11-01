@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/marvelalexius/jones/model"
@@ -37,7 +38,7 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 		return model.Reaction{}, err
 	}
 
-	if subscribed == nil {
+	if subscribed.ID == "" {
 		count, err := s.ReactionRepo.FindSwipeCount(ctx, req.UserID)
 		if err != nil {
 			logger.Errorln(ctx, "failed to find swipe count", err)
@@ -48,8 +49,21 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 		if count >= 10 {
 			logger.Errorln(ctx, "cannot swipe more than 10 times", err)
 
-			return model.Reaction{}, err
+			return model.Reaction{}, errors.New("cannot swipe more than 10 times. please try again tomorrow")
 		}
+	}
+
+	hasSwiped, err := s.ReactionRepo.HasSwiped(ctx, req.UserID, req.MatchedUserID)
+	if err != nil {
+		logger.Errorln(ctx, "failed to check if user has swiped", err)
+
+		return model.Reaction{}, err
+	}
+
+	if hasSwiped.ID != "" {
+		logger.Errorln(ctx, "user has already swiped")
+
+		return model.Reaction{}, errors.New("user has already swiped")
 	}
 
 	reaction := req.ToReactionModel()
@@ -60,7 +74,7 @@ func (s *ReactionService) Swipe(ctx context.Context, req model.ReactionRequest) 
 		return model.Reaction{}, err
 	}
 
-	if matched.ID != "" {
+	if matched.ID == "" {
 		err = s.ReactionRepo.Create(ctx, reaction)
 		if err != nil {
 			logger.Errorln(ctx, "failed to create reaction", err)

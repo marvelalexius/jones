@@ -60,7 +60,7 @@ func (r *UserRepository) FindAll(ctx context.Context, userIds []string, preferen
 func (r *UserRepository) FindByID(ctx context.Context, id string) (*model.User, error) {
 	var user model.User
 
-	if err := r.db.First(&user, id).Error; err != nil {
+	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
 	}
 

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/marvelalexius/jones/config"
@@ -35,7 +36,9 @@ func NewUserService(config *config.Config, userRepo repository.IUserRepository, 
 }
 
 func (s *UserService) Login(ctx context.Context, req model.LoginUser) (*model.User, error) {
-	user, err := s.UserRepo.FindByEmail(ctx, req.Email)
+	requestedEmail := strings.ToLower(req.Email)
+
+	user, err := s.UserRepo.FindByEmail(ctx, requestedEmail)
 	if err != nil {
 		logger.Errorln(ctx, "failed to find user", err)
 
@@ -53,7 +56,9 @@ func (s *UserService) Login(ctx context.Context, req model.LoginUser) (*model.Us
 }
 
 func (s *UserService) Register(ctx context.Context, req *model.RegisterUser) (*model.User, error) {
-	userExists, err := s.UserRepo.FindByEmail(ctx, req.Email)
+	requestedEmail := strings.ToLower(req.Email)
+
+	userExists, err := s.UserRepo.FindByEmail(ctx, requestedEmail)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		logger.Errorln(ctx, "failed to find user", err)
 
@@ -87,7 +92,7 @@ func (s *UserService) Register(ctx context.Context, req *model.RegisterUser) (*m
 }
 
 func (s *UserService) RefreshAuthToken(ctx context.Context, refreshToken string) (string, string, error) {
-	claims, err := str.ParseJWT(refreshToken, s.Config.App.Secret)
+	claims, err := str.ParseJWT(refreshToken, s.Config.App.RefreshTokenSecret)
 	if err != nil {
 		logger.Errorln(ctx, "failed to parse refresh token", err)
 
