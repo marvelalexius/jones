@@ -54,6 +54,17 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID string, req 
 		return "", err
 	}
 
+	subscription, err := s.SubscriptionRepo.FindByUserID(ctx, user.ID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logger.Errorln(ctx, "error finding subscription by user ID", err)
+
+		return "", err
+	}
+
+	if subscription != nil {
+		return "", errors.New("you are already subscribed")
+	}
+
 	if s.Conf.FeatureFlag.EnableStripe && plan.StripePriceID != "" {
 		if user.StripeCustomerID == "" {
 			customer, err := s.StripeClient.CreateCustomer(ctx, user.Email, user.Name)
